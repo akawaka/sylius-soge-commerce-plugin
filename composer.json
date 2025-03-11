@@ -1,4 +1,5 @@
 {
+    "name": "akawaka/sylius-soge-commerce-plugin",
     "type": "sylius-plugin",
     "keywords": [
         "sylius",
@@ -54,8 +55,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Acme\\SyliusExamplePlugin\\": "src/",
-            "Tests\\Acme\\SyliusExamplePlugin\\": "tests/"
+            "Akawaka\\SyliusSogeCommercePlugin\\": "src/",
+            "Tests\\Akawaka\\SyliusSogeCommercePlugin\\": "tests/"
         }
     },
     "autoload-dev": {

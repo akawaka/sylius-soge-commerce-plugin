@@ -128,18 +128,6 @@
             "ref": "d1227d002b70d1a1f941d91845fcd7ac7fbfc929"
         }
     },
-    "nyholm/psr7": {
-        "version": "1.8",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "main",
-            "version": "1.0",
-            "ref": "4a8c0345442dcca1d8a2c65633dcf0285dd5a5a2"
-        },
-        "files": [
-            "config/packages/nyholm_psr7.yaml"
-        ]
-    },
     "payum/payum-bundle": {
         "version": "2.6",
         "recipe": {
@@ -191,6 +179,15 @@
             "branch": "main",
             "version": "4.11",
             "ref": "b4edd2a1e6ac1827202f336cac2771cb529de542"
+        }
+    },
+    "sonata-project/doctrine-extensions": {
+        "version": "2.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "1.8",
+            "ref": "4ea4a4b6730f83239608d7d4c849533645c70169"
         }
     },
     "sonata-project/form-extensions": {
@@ -432,18 +429,6 @@
             "config/packages/webpack_encore.yaml",
             "package.json",
             "webpack.config.js"
-        ]
-    },
-    "symfony/workflow": {
-        "version": "6.4",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "main",
-            "version": "3.3",
-            "ref": "3b2f8ca32a07fcb00f899649053943fa3d8bbfb6"
-        },
-        "files": [
-            "config/packages/workflow.yaml"
         ]
     },
     "willdurand/hateoas-bundle": {
