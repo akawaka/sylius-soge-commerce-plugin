@@ -33,6 +33,7 @@
         "phpstan/phpstan-webmozart-assert": "^1.2.0",
         "phpunit/phpunit": "^9.5",
         "polishsymfonycommunity/symfony-mocker-container": "^1.0",
+        "psalm/plugin-symfony": "*",
         "sensiolabs/security-checker": "^6.0",
         "sylius-labs/coding-standard": "^4.2",
         "symfony/browser-kit": "^5.4",
@@ -65,6 +66,20 @@
         ]
     },
     "scripts": {
+        "static-analysis": [
+            "@psalm",
+            "@phpstan",
+            "@ecs"
+        ],
+        "psalm": [
+            "php vendor/bin/psalm"
+        ],
+        "phpstan": [
+            "php vendor/bin/phpstan"
+        ],
+        "ecs": [
+            "php vendor/bin/ecs"
+        ],
         "post-install-cmd": [
             "php bin/create_node_symlink.php"
         ],

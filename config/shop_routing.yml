@@ -1,0 +1,6 @@
+akawaka_soge_commerce_smart_form_after_submit:
+    # The path should not start with /checkout because if the order is completed (when the user retries the payment),
+    # the user is automatically redirected without the controller being called.
+    path: /order/soge-commerce-after-submit
+    controller: Akawaka\SyliusSogeCommercePlugin\Controller\SmartFormAfterSubmitAction
+    methods: POST
