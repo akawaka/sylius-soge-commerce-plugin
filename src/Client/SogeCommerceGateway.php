@@ -92,7 +92,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
             throw new \RuntimeException(sprintf('Unsuported "%s" hash algorithm', $hashAlgorithm));
         }
 
-        $key = $gatewayConfig->getConfig()['hmac_sha_256_key'];
+        $key = $gatewayConfig->getConfig()['hmac_sha_256_key'] ?? null;
         Assert::string($key);
 
         $answer = str_replace('\/', '/', (string) $request->request->get('kr-answer'));
@@ -158,6 +158,6 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
      */
     public function isPaymentSuccess(array $requestData): bool
     {
-        return $requestData['orderStatus'] === 'PAID';
+        return ($requestData['orderStatus'] ?? null) === 'PAID';
     }
 }
