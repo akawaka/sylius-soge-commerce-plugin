@@ -32,6 +32,9 @@ final class ProgressOrderStatusHandler implements ProgressOrderStatusHandlerInte
 
         if ('completed' !== $stateMachine->getState()) {
             $stateMachine->apply('select_payment');
+        }
+
+        if ('completed' !== $stateMachine->getState()) {
             $stateMachine->apply('complete');
         }
 

@@ -102,11 +102,11 @@ akawaka_sylius_soge_commerce_plugin_shop:
 
 ##### 4. Update sylius templates:
 
-`cp -R vendor/akawaka/sylius-soge-commerce-plugin/tests/Application/templates/ templates/`
+`cp -R vendor/akawaka/sylius-soge-commerce-plugin/tests/Application/templates/* templates/`
 
 You might want to override this plugin templates:
 
-`cp -R vendor/akawaka/sylius-soge-commerce-plugin/templates/ templates/bundles/@AkawakaSyliusSogeCommercePlugin/`
+`cp -R vendor/akawaka/sylius-soge-commerce-plugin/templates/* templates/bundles/AkawakaSyliusSogeCommercePlugin/`
 
 > **_NOTE:_**  The content in `tests/Application/templates/bundles/SyliusShopBundle/_scripts.html.twig` should be adapted to your theme and moved to an asset file.
 

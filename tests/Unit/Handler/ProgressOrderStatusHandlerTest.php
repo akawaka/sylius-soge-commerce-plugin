@@ -34,9 +34,10 @@ final class ProgressOrderStatusHandlerTest extends TestCase
             ->willReturn($stateMachine = self::createMock(StateMachineInterface::class))
         ;
 
-        $stateMachine->expects(self::once())
+        $stateMachine->expects(self::exactly(2))
             ->method('getState')
             ->willReturn('shipping_selected')
+            ->willReturnOnConsecutiveCalls('shipping_selected', 'payment_selected');
         ;
 
         $stateMachine->expects(self::exactly(2))
@@ -53,6 +54,36 @@ final class ProgressOrderStatusHandlerTest extends TestCase
         self::assertEquals(['sogeCommerceRequestData' => ['foo' => 'some data']], $payment->getDetails());
     }
 
+    public function testInvokeWhenStateNotCompletedAndSkip(): void
+    {
+        $order = new Order();
+        $order->addPayment($payment = new Payment());
+
+        $stateMachineFactory = self::createMock(FactoryInterface::class);
+        $stateMachineFactory->expects(self::once())
+            ->method('get')
+            ->with($order, 'sylius_order_checkout')
+            ->willReturn($stateMachine = self::createMock(StateMachineInterface::class))
+        ;
+
+        $stateMachine->expects(self::exactly(2))
+            ->method('getState')
+            ->willReturn('shipping_selected')
+            ->willReturnOnConsecutiveCalls('shipping_selected', 'completed');
+        ;
+
+        $stateMachine->expects(self::exactly(1))
+            ->method('apply')
+            ->willReturnCallback(fn (string $transition) => match (true) {
+                'select_payment' == $transition => true,
+                default => throw new \LogicException(),
+            })
+        ;
+
+        (new ProgressOrderStatusHandler($stateMachineFactory))->__invoke($order, ['foo' => 'some data']);
+
+        self::assertEquals(['sogeCommerceRequestData' => ['foo' => 'some data']], $payment->getDetails());
+    }
     public function testInvokeWhenStateCompleted(): void
     {
         $order = new Order();
@@ -65,7 +96,7 @@ final class ProgressOrderStatusHandlerTest extends TestCase
             ->willReturn($stateMachine = self::createMock(StateMachineInterface::class))
         ;
 
-        $stateMachine->expects(self::once())
+        $stateMachine->expects(self::exactly(2))
             ->method('getState')
             ->willReturn('completed')
         ;
