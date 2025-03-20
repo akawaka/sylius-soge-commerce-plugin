@@ -19,4 +19,13 @@ final class OrderIdTransformer implements OrderIdTransformerInterface
 
         return $matches['id'];
     }
+
+    public function retrievePayment(string $value): string
+    {
+        if (false === preg_match('/^order-.*-payment-(?<id>.+)$/', $value, $matches)) {
+            throw new \RuntimeException('Provided value is not a valid order id.');
+        }
+
+        return $matches['id'];
+    }
 }

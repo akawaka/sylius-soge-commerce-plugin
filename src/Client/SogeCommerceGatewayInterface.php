@@ -7,7 +7,6 @@ namespace Akawaka\SyliusSogeCommercePlugin\Client;
 use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentMethodInterface;
 use Sylius\Component\Payment\Model\PaymentInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 interface SogeCommerceGatewayInterface
 {
@@ -18,8 +17,6 @@ interface SogeCommerceGatewayInterface
     public const PAYMENT_DETAILS_STATUS_KEY = 'paymentStatus';
 
     public function createFormToken(PaymentMethodInterface $method, OrderInterface $order): string;
-
-    public function isValidBankReturn(PaymentMethodInterface $method, Request $request): bool;
 
     public function cancelPayment(PaymentInterface $payment): void;
 

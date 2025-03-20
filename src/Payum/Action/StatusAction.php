@@ -70,7 +70,7 @@ final class StatusAction implements ActionInterface
     private function isAmountValid(PaymentInterface $payment): bool
     {
         $orderAmount = $payment->getOrder()?->getTotal();
-        if ($orderAmount === null) {
+        if (null === $orderAmount) {
             return false;
         }
 

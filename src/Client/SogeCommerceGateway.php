@@ -10,7 +10,6 @@ use GuzzleHttp\ClientInterface;
 use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentMethodInterface;
 use Sylius\Component\Payment\Model\PaymentInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Webmozart\Assert\Assert;
 
 final class SogeCommerceGateway implements SogeCommerceGatewayInterface
@@ -26,7 +25,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
         $gatewayConfig = $method->getGatewayConfig();
         Assert::notNull($gatewayConfig);
 
-        if ($gatewayConfig->getFactoryName() !== 'akawaka_soge_commerce') {
+        if ('akawaka_soge_commerce' !== $gatewayConfig->getFactoryName()) {
             throw new \LogicException(sprintf('Method with code "%s" is not a valid "akawaka_soge_commerce" method.', $method->getCode() ?? ''));
         }
 
@@ -81,25 +80,6 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
         return $formToken;
     }
 
-    public function isValidBankReturn(PaymentMethodInterface $method, Request $request): bool
-    {
-        $gatewayConfig = $method->getGatewayConfig();
-        Assert::notNull($gatewayConfig);
-
-        $hashAlgorithm = $request->request->get('kr-hash-algorithm');
-        Assert::string($hashAlgorithm);
-        if ($hashAlgorithm !== 'sha256_hmac') {
-            throw new \RuntimeException(sprintf('Unsuported "%s" hash algorithm', $hashAlgorithm));
-        }
-
-        $key = $gatewayConfig->getConfig()['hmac_sha_256_key'] ?? null;
-        Assert::string($key);
-
-        $answer = str_replace('\/', '/', (string) $request->request->get('kr-answer'));
-
-        return hash_hmac('sha256', $answer, $key) === $request->request->get('kr-hash');
-    }
-
     public function cancelPayment(PaymentInterface $payment): void
     {
         $method = $payment->getMethod();
@@ -108,7 +88,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
         $gatewayConfig = $method->getGatewayConfig();
         Assert::notNull($gatewayConfig);
 
-        if ($gatewayConfig->getFactoryName() !== 'akawaka_soge_commerce') {
+        if ('akawaka_soge_commerce' !== $gatewayConfig->getFactoryName()) {
             throw new \LogicException(sprintf('Method with code "%s" is not a valid "akawaka_soge_commerce" method.', $method->getCode() ?? ''));
         }
 
@@ -128,7 +108,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
 
         $response = $this->client->request(
             'POST',
-            'https://api-sogecommerce.societegenerale.eu/api-payment/V4/Charge/PaymentOrder/Cancel',
+            'https://api-sogecommerce.societegenerale.eu/api-payment/V4/Transaction/Cancel',
             [
                 'headers' => [
                     'Authorization' => sprintf('Basic %s', $authorization),

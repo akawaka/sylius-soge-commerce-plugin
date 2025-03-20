@@ -9,4 +9,6 @@ interface OrderIdTransformerInterface
     public function transform(string $orderId, string $paymentId): string;
 
     public function retrieve(string $value): string;
+
+    public function retrievePayment(string $value): string;
 }

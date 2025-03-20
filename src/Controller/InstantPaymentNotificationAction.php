@@ -7,21 +7,24 @@ namespace Akawaka\SyliusSogeCommercePlugin\Controller;
 use Akawaka\SyliusSogeCommercePlugin\Client\IsValidRequestInterface;
 use Akawaka\SyliusSogeCommercePlugin\Client\OrderIdTransformerInterface;
 use Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceGatewayInterface;
+use Akawaka\SyliusSogeCommercePlugin\Handler\CapturePaymentHandlerInterface;
 use Akawaka\SyliusSogeCommercePlugin\Handler\ProgressOrderStatusHandlerInterface;
 use Akawaka\SyliusSogeCommercePlugin\Handler\UpdateOrderPaymentMethodHandlerInterface;
 use Doctrine\Persistence\ObjectManager;
 use SM\SMException;
 use Sylius\Component\Core\Model\OrderInterface;
+use Sylius\Component\Core\Model\PaymentInterface;
 use Sylius\Component\Core\Model\PaymentMethodInterface;
 use Sylius\Component\Core\Repository\PaymentMethodRepositoryInterface;
 use Sylius\Component\Order\Repository\OrderRepositoryInterface;
+use Sylius\Component\Payment\Model\PaymentInterface as ModelPaymentInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Webmozart\Assert\Assert;
 
-final class SmartFormAfterSubmitAction extends AbstractController
+final class InstantPaymentNotificationAction extends AbstractController
 {
     public function __construct(
         private IsValidRequestInterface $isValidRequest,
@@ -29,6 +32,7 @@ final class SmartFormAfterSubmitAction extends AbstractController
         private OrderIdTransformerInterface $orderIdTransformer,
         private UpdateOrderPaymentMethodHandlerInterface $updateOrderPaymentMethodHandler,
         private ProgressOrderStatusHandlerInterface $progressOrderStatusHandler,
+        private CapturePaymentHandlerInterface $capturePaymentHandler,
         private OrderRepositoryInterface $orderRepository,
         private PaymentMethodRepositoryInterface $paymentMethodRepository,
         private ObjectManager $em,
@@ -36,23 +40,9 @@ final class SmartFormAfterSubmitAction extends AbstractController
     }
 
     /**
-     * This action is triggered after the user pays for their cart on the payment selection page.
-     * At this moment, we still have a cart, so it must be completed to be transformed into an order.
-     *
-     * We do not validate the payment yet; this is done in the StatusAction, just like any other
-     * Sylius payment gateway. The CaptureAction does nothing; everything is handled in this
-     * action because the payment is actually performed on the payment selection page instead of after
-     * the cart is completed.
-     *
-     * This creates a potential issue: a customer can open multiple browser windows, start a payment
-     * in one, then modify their cart in another. This could result in them paying an outdated amount
-     * that no longer matches their cart total.
-     *
-     * To prevent this, the StatusAction checks if the paid amount matches the current cart total.
-     * If there is a mismatch, the payment is marked as failed and canceled using the Soge Commerce API.
-     *
-     * If the API is not active, an event is triggered instead. It is the responsibility of those
-     * who install the plugin to listen for this event and take action, such as notifying the webmaster by email.
+     * This action is similar to Akawaka\SyliusSogeCommercePlugin\Controller\SmartFormAfterSubmitAction,
+     * but it's initiated by the bank server. Consequently, responses and checks differ.
+     * Unlike the other controller, this request captures the payment using the CapturePaymentHandler.
      */
     public function __invoke(Request $request): Response
     {
@@ -69,19 +59,22 @@ final class SmartFormAfterSubmitAction extends AbstractController
         if (false === $this->gateway->isPaymentSuccess($requestData)) {
             $this->em->flush();
 
-            $this->addFlash('error', 'akawaka_sylius_soge_commerce_plugin.payment_refused');
-
-            return $this->redirectToRoute('sylius_shop_checkout_select_payment');
+            return new Response();
         }
 
         try {
             $this->progressOrderStatusHandler->__invoke($order, $requestData);
+
+            // The payment should be captured manually for the IPN action.
+            // Also, we make sure to pass the correct payment.
+            $this->capturePaymentHandler->__invoke($this->getPayment($order, $requestData));
+
             $this->em->flush();
         } catch (SMException) {
             throw new UnprocessableEntityHttpException();
         }
 
-        return $this->redirectToRoute('sylius_shop_order_pay', ['tokenValue' => $order->getTokenValue()]);
+        return new Response();
     }
 
     private function getRequestData(Request $request): array
@@ -121,5 +114,25 @@ final class SmartFormAfterSubmitAction extends AbstractController
         Assert::isInstanceOf($order, OrderInterface::class);
 
         return $order;
+    }
+
+    private function getPayment(OrderInterface $order, array $requestData): PaymentInterface
+    {
+        $orderId = $requestData['orderDetails']['orderId'] ?? null;
+        Assert::string($orderId);
+
+        $id = $this->orderIdTransformer->retrievePayment($orderId);
+
+        $payment = $order->getPayments()->filter(function (ModelPaymentInterface $payment) use ($id): bool {
+            return ((string) $payment->getId()) === $id;
+        })->first();
+
+        if (false === $payment) {
+            throw $this->createNotFoundException();
+        }
+
+        Assert::isInstanceOf($payment, PaymentInterface::class);
+
+        return $payment;
     }
 }

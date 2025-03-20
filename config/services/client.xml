@@ -8,5 +8,9 @@
         </service>
 
         <service id="Akawaka\SyliusSogeCommercePlugin\Client\OrderIdTransformer" />
+
+        <service id="Akawaka\SyliusSogeCommercePlugin\Client\IsValidBankReturnRequest" />
+
+        <service id="Akawaka\SyliusSogeCommercePlugin\Client\IsValidIPNRequest" />
     </services>
 </container>

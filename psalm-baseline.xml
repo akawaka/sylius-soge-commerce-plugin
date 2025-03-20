@@ -6,6 +6,11 @@
       <code>getFactoryName</code>
     </DeprecatedMethod>
   </file>
+  <file src="src/Handler/CapturePaymentHandler.php">
+    <DeprecatedClass occurrences="1">
+      <code>$this-&gt;payum-&gt;getTokenFactory()</code>
+    </DeprecatedClass>
+  </file>
   <file src="tests/Unit/Client/FakePayment.php">
     <PropertyNotSetInConstructor occurrences="1">
       <code>FakePayment</code>

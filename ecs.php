@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use PhpCsFixer\Fixer\ClassNotation\VisibilityRequiredFixer;
+use PhpCsFixer\Fixer\ControlStructure\YodaStyleFixer;
 use Symplify\EasyCodingStandard\Config\ECSConfig;
 
 return static function (ECSConfig $ecsConfig): void {
@@ -18,4 +19,6 @@ return static function (ECSConfig $ecsConfig): void {
     $ecsConfig->skip([
         VisibilityRequiredFixer::class => ['*Spec.php'],
     ]);
+
+    $ecsConfig->rule(YodaStyleFixer::class);
 };

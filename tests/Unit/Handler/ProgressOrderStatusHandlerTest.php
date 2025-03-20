@@ -33,8 +33,8 @@ final class ProgressOrderStatusHandlerTest extends TestCase
         $stateMachine->expects(self::exactly(2))
             ->method('apply')
             ->willReturnCallback(fn (string $transition) => match (true) {
-                $transition == 'select_payment' => true,
-                $transition == 'complete' => true,
+                'select_payment' == $transition => true,
+                'complete' == $transition => true,
                 default => throw new \LogicException(),
             })
         ;

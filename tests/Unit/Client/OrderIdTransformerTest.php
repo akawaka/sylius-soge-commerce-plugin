@@ -37,4 +37,19 @@ final class OrderIdTransformerTest extends TestCase
         yield ['order-1-payment-1', '1'];
         yield ['order-123-payment-1', '123'];
     }
+
+    /**
+     * @dataProvider provideRetrievePayment
+     */
+    public function testRetrievePayment(string $value, string $expectedResult): void
+    {
+        self::assertEquals($expectedResult, (new OrderIdTransformer())->retrievePayment($value));
+    }
+
+    public function provideRetrievePayment(): iterable
+    {
+        yield ['order-1-payment-1', '1'];
+        yield ['order-123-payment-1', '1'];
+        yield ['order-123-payment-1123', '1123'];
+    }
 }
