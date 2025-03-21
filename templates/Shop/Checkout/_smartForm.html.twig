@@ -1,0 +1,13 @@
+<div data-smart-form-container>
+    {% if app.environment == 'dev' %}
+        <div class="ui message">
+            <ul>
+                <li>Accepted: <div class="ui label">4970100000000055</div></li>
+                <li>Refused: <div class="ui label">4970100000000113</div></li>
+                <li><a href="https://sogecommerce.societegenerale.eu/doc/fr-FR/rest/V4.0/api/kb/test_cards.html">More</a></li>
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="kr-smart-form" kr-form-token="{{ formToken }}" ></div>
+</div>

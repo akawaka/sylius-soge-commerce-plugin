@@ -1,0 +1,7 @@
+akawaka_sylius_soge_commerce_plugin:
+    gateway:
+        user: Utilisateur
+        password: Mot de passe
+        public_key: Clé publique
+        public_key_help: 'Le format de la clé publique doit suivre ce modèle : utilisateur:clé_publique'
+        hmac_sha_256_key: Clé HMAC SHA-256

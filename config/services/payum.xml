@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="akawaka_sylius_soge_commerce_plugin.payment" class="Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder">
+            <argument>Akawaka\SyliusSogeCommercePlugin\Payum\PaymentGatewayFactory</argument>
+            <tag name="payum.gateway_factory_builder" factory="akawaka_soge_commerce" />
+        </service>
+
+        <service id="Akawaka\SyliusSogeCommercePlugin\Payum\Action\StatusAction" public="true">
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceGateway" />
+            <argument type="service" id="event_dispatcher" />
+            <tag name="payum.action" factory="akawaka_soge_commerce" alias="payum.action.status" />
+        </service>
+
+        <service id="Akawaka\SyliusSogeCommercePlugin\Payum\Action\CaptureAction" public="true">
+            <tag name="payum.action" factory="akawaka_soge_commerce" alias="payum.akawaka_soge_commerce.action.capture" />
+        </service>
+    </services>
+</container>
