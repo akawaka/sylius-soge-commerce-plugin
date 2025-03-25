@@ -122,7 +122,7 @@ final class SmartFormAfterSubmitAction extends AbstractController
 
         $id = $this->orderIdTransformer->retrieve($orderId);
 
-        $order = $this->orderRepository->findOneBy(['id' => $id]);
+        $order = $this->orderRepository->find($id);
         if (null === $order) {
             throw $this->createNotFoundException();
         }

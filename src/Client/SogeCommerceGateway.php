@@ -15,6 +15,7 @@ namespace Akawaka\SyliusSogeCommercePlugin\Client;
 
 use Akawaka\SyliusSogeCommercePlugin\Exception\FailedToCancelPaymentException;
 use Akawaka\SyliusSogeCommercePlugin\Exception\SogeCommerceApiNotActivatedException;
+use Akawaka\SyliusSogeCommercePlugin\Payum\PaymentGatewayFactory;
 use GuzzleHttp\ClientInterface;
 use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentMethodInterface;
@@ -34,8 +35,8 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
         $gatewayConfig = $method->getGatewayConfig();
         Assert::notNull($gatewayConfig);
 
-        if ('akawaka_soge_commerce' !== $gatewayConfig->getFactoryName()) {
-            throw new \LogicException(sprintf('Method with code "%s" is not a valid "akawaka_soge_commerce" method.', $method->getCode() ?? ''));
+        if (PaymentGatewayFactory::FACTORY_NAME !== $gatewayConfig->getFactoryName()) {
+            throw new \LogicException(sprintf('Method with code "%s" is not a valid "%s" method.', $method->getCode() ?? '', PaymentGatewayFactory::FACTORY_NAME));
         }
 
         $config = $gatewayConfig->getConfig();
@@ -97,8 +98,8 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
         $gatewayConfig = $method->getGatewayConfig();
         Assert::notNull($gatewayConfig);
 
-        if ('akawaka_soge_commerce' !== $gatewayConfig->getFactoryName()) {
-            throw new \LogicException(sprintf('Method with code "%s" is not a valid "akawaka_soge_commerce" method.', $method->getCode() ?? ''));
+        if (PaymentGatewayFactory::FACTORY_NAME !== $gatewayConfig->getFactoryName()) {
+            throw new \LogicException(sprintf('Method with code "%s" is not a valid "%s" method.', $method->getCode() ?? '', PaymentGatewayFactory::FACTORY_NAME));
         }
 
         $config = $gatewayConfig->getConfig();

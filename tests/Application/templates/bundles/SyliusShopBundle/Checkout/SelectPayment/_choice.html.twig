@@ -12,7 +12,7 @@
             </div>
         {% endif %}
 
-        {% if method.gatewayConfig.factoryName == 'akawaka_soge_commerce' %}
+        {% if method.gatewayConfig.factoryName == constant('Akawaka\\SyliusSogeCommercePlugin\\Payum\\PaymentGatewayFactory::FACTORY_NAME') %}
             {{ render(controller('Akawaka\\SyliusSogeCommercePlugin\\Controller\\SmartFormAction::__invoke', {method, order})) }}
         {% endif %}
     </div>

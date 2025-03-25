@@ -16,7 +16,8 @@ namespace Akawaka\SyliusSogeCommercePlugin\Handler;
 use Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceGatewayInterface;
 use SM\Factory\FactoryInterface;
 use Sylius\Component\Core\Model\OrderInterface;
-use Sylius\Component\Core\Model\PaymentInterface;
+use Sylius\Component\Core\OrderCheckoutStates;
+use Sylius\Component\Core\OrderCheckoutTransitions;
 use Webmozart\Assert\Assert;
 
 final class ProgressOrderStatusHandler implements ProgressOrderStatusHandlerInterface
@@ -30,16 +31,16 @@ final class ProgressOrderStatusHandler implements ProgressOrderStatusHandlerInte
     {
         $stateMachine = $this->stateMachineFactory->get($order, 'sylius_order_checkout');
 
-        if ('completed' !== $stateMachine->getState()) {
-            $stateMachine->apply('select_payment');
+        if (OrderCheckoutStates::STATE_COMPLETED !== $stateMachine->getState()) {
+            $stateMachine->apply(OrderCheckoutTransitions::TRANSITION_SELECT_PAYMENT);
         }
 
-        if ('completed' !== $stateMachine->getState()) {
-            $stateMachine->apply('complete');
+        if (OrderCheckoutStates::STATE_COMPLETED !== $stateMachine->getState()) {
+            $stateMachine->apply(OrderCheckoutTransitions::TRANSITION_COMPLETE);
         }
 
-        $payment = $order->getPayments()->last();
-        Assert::isInstanceOf($payment, PaymentInterface::class);
+        $payment = $order->getLastPayment();
+        Assert::notNull($payment);
         $payment->setDetails([
             SogeCommerceGatewayInterface::PAYMENT_DETAILS_REQUEST_DATA_KEY => $requestData,
         ]);

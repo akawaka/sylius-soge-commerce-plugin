@@ -7,7 +7,7 @@
         src="https://static-sogecommerce.societegenerale.eu/static/js/krypton-client/V4.0/stable/kr-payment-form.min.js"
         integrity="sha384-FIqRg5Z3CArcz1UvV7osFqEHYW01awqNCTwwTYoL6lhBgo7+3t9yswE3vO93wOGv"
         crossorigin="anonymous"
-        kr-public-key="19173383:testpublickey_MFbEXzwYvhWgBv2tnouCKG9S4TI7rzbr5EkuAxhefKr3F"
+        kr-public-key="{{ akawaka_soge_commerce_public_key() }}"
         kr-post-url-success="{{ path('akawaka_soge_commerce_smart_form_after_submit') }}"
         kr-language="{{ app.request.locale }}"
 >

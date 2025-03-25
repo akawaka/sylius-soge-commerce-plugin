@@ -98,6 +98,9 @@ akawaka_sylius_soge_commerce_plugin_shop:
     prefix: /{_locale}
     requirements:
         _locale: ^[a-z]{2}(?:_[A-Z]{2})?$
+
+akawaka_sylius_soge_commerce_plugin_api_shop:
+    resource: "@AkawakaSyliusSogeCommercePlugin/config/api_shop_routing.yml"
 ```
 
 ##### 4. Update sylius templates:

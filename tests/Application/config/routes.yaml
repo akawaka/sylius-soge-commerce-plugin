@@ -1,2 +1,8 @@
 akawaka_sylius_soge_commerce_plugin_shop:
     resource: "@AkawakaSyliusSogeCommercePlugin/config/shop_routing.yml"
+    prefix: /{_locale}
+    requirements:
+        _locale: ^[a-z]{2}(?:_[A-Z]{2})?$
+
+akawaka_sylius_soge_commerce_plugin_api_shop:
+    resource: "@AkawakaSyliusSogeCommercePlugin/config/api_shop_routing.yml"

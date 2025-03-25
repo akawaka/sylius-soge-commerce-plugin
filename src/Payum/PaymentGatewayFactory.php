@@ -18,10 +18,12 @@ use Payum\Core\GatewayFactory;
 
 final class PaymentGatewayFactory extends GatewayFactory
 {
+    public const FACTORY_NAME = 'akawaka_soge_commerce';
+
     protected function populateConfig(ArrayObject $config): void
     {
         $config->defaults([
-            'payum.factory_name' => 'akawaka_soge_commerce',
+            'payum.factory_name' => self::FACTORY_NAME,
             'payum.factory_title' => 'Soge Commerce',
         ]);
     }

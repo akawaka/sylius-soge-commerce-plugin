@@ -38,7 +38,6 @@ final class ProgressOrderStatusHandlerTest extends TestCase
             ->method('getState')
             ->willReturn('shipping_selected')
             ->willReturnOnConsecutiveCalls('shipping_selected', 'payment_selected');
-        ;
 
         $stateMachine->expects(self::exactly(2))
             ->method('apply')
@@ -70,7 +69,6 @@ final class ProgressOrderStatusHandlerTest extends TestCase
             ->method('getState')
             ->willReturn('shipping_selected')
             ->willReturnOnConsecutiveCalls('shipping_selected', 'completed');
-        ;
 
         $stateMachine->expects(self::exactly(1))
             ->method('apply')
@@ -84,6 +82,7 @@ final class ProgressOrderStatusHandlerTest extends TestCase
 
         self::assertEquals(['sogeCommerceRequestData' => ['foo' => 'some data']], $payment->getDetails());
     }
+
     public function testInvokeWhenStateCompleted(): void
     {
         $order = new Order();
