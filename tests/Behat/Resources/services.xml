@@ -4,5 +4,7 @@
     <services>
         <defaults public="true" />
         <!-- Put your Behat services here -->
+
+        <service id="akawaka_soge_commerce.context.example" class="Tests\Akawaka\SyliusSogeCommercePlugin\Behat\Context\ExampleContext"/>
     </services>
 </container>
