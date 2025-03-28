@@ -47,6 +47,7 @@ final class SogeCommerceGatewayTest extends TestCase
             paymentId: 1,
             customerEmail: 'user@mail.com',
             total: 4357,
+            currencyCode: 'EUR',
         );
 
         $client->expects(self::once())

@@ -17,7 +17,7 @@ use Sylius\Component\Core\Model\PaymentMethodInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Webmozart\Assert\Assert;
 
-final class IsValidBankReturnR
+final class IsValidBankReturn
 {
     public function __invoke(PaymentMethodInterface $method, Request $request): bool
     {

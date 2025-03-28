@@ -27,6 +27,7 @@ final class FakeOrder extends Order
         int $paymentId,
         string $customerEmail,
         int $total,
+        string $currencyCode,
     ) {
         parent::__construct();
 
@@ -38,6 +39,8 @@ final class FakeOrder extends Order
         $this->setCustomer($customer);
 
         $this->addPayment(new FakePayment($paymentId));
+
+        $this->setCurrencyCode($currencyCode);
     }
 
     public function getId(): int

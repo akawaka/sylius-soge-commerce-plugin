@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Akawaka\SyliusSogeCommercePlugin\Client;
 
 use Akawaka\SyliusSogeCommercePlugin\Exception\FailedToCancelPaymentException;
+use Akawaka\SyliusSogeCommercePlugin\Exception\InvalidPaymentMethodException;
+use Akawaka\SyliusSogeCommercePlugin\Exception\SogeCommerceApiException;
 use Akawaka\SyliusSogeCommercePlugin\Exception\SogeCommerceApiNotActivatedException;
 use Akawaka\SyliusSogeCommercePlugin\Payum\PaymentGatewayFactory;
 use GuzzleHttp\ClientInterface;
@@ -36,7 +38,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
         Assert::notNull($gatewayConfig);
 
         if (PaymentGatewayFactory::FACTORY_NAME !== $gatewayConfig->getFactoryName()) {
-            throw new \LogicException(sprintf('Method with code "%s" is not a valid "%s" method.', $method->getCode() ?? '', PaymentGatewayFactory::FACTORY_NAME));
+            throw new InvalidPaymentMethodException(sprintf('Method with code "%s" is not a valid "%s" method.', $method->getCode() ?? '', PaymentGatewayFactory::FACTORY_NAME));
         }
 
         $config = $gatewayConfig->getConfig();
@@ -60,8 +62,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
                 ],
                 'json' => [
                     'amount' => $order->getTotal(),
-                    'currency' => 'EUR', // todo
-                    // 'currency' => $order->getCurrencyCode(),
+                    'currency' => $order->getCurrencyCode(),
                     'orderId' => $this->orderIdTransformer->transform((string) $order->getId(), (string) $payment->getId()),
                     'customer' => [
                         'email' => $order->getCustomer()?->getEmail(),
@@ -80,7 +81,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
             $errorMessage = $data['answer']['errorMessage'] ?? null;
             Assert::string($errorMessage);
 
-            throw new \RuntimeException(sprintf('Error when creating formToken: "%s"', $errorMessage));
+            throw new SogeCommerceApiException(sprintf('Error when creating formToken: "%s"', $errorMessage));
         }
 
         Assert::isArray($data['answer']);
@@ -99,7 +100,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
         Assert::notNull($gatewayConfig);
 
         if (PaymentGatewayFactory::FACTORY_NAME !== $gatewayConfig->getFactoryName()) {
-            throw new \LogicException(sprintf('Method with code "%s" is not a valid "%s" method.', $method->getCode() ?? '', PaymentGatewayFactory::FACTORY_NAME));
+            throw new InvalidPaymentMethodException(sprintf('Method with code "%s" is not a valid "%s" method.', $method->getCode() ?? '', PaymentGatewayFactory::FACTORY_NAME));
         }
 
         $config = $gatewayConfig->getConfig();
@@ -144,7 +145,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
     }
 
     /**
-     * See https://sogecommerce.societegenerale.eu/doc/fr-FR/rest/V4.0/kb/payment_done.html
+     * @see https://sogecommerce.societegenerale.eu/doc/fr-FR/rest/V4.0/kb/payment_done.html Doc on existing status.
      */
     public function isPaymentSuccess(array $requestData): bool
     {

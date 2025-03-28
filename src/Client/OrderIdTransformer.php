@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Akawaka\SyliusSogeCommercePlugin\Client;
 
+use Akawaka\SyliusSogeCommercePlugin\Exception\InvalidOrderIdException;
+
 final class OrderIdTransformer implements OrderIdTransformerInterface
 {
     public function transform(string $orderId, string $paymentId): string
@@ -23,7 +25,7 @@ final class OrderIdTransformer implements OrderIdTransformerInterface
     public function retrieve(string $value): string
     {
         if (false === preg_match('/^order-(?<id>.+)-payment-.*$/', $value, $matches)) {
-            throw new \RuntimeException('Provided value is not a valid order id.');
+            throw new InvalidOrderIdException();
         }
 
         return $matches['id'];
@@ -32,7 +34,7 @@ final class OrderIdTransformer implements OrderIdTransformerInterface
     public function retrievePayment(string $value): string
     {
         if (false === preg_match('/^order-.*-payment-(?<id>.+)$/', $value, $matches)) {
-            throw new \RuntimeException('Provided value is not a valid order id.');
+            throw new InvalidOrderIdException();
         }
 
         return $matches['id'];
