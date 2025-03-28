@@ -55,6 +55,8 @@ final class InstantPaymentNotificationAction extends AbstractController
      */
     public function __invoke(Request $request): Response
     {
+        return new Response();
+
         $requestData = $this->getRequestData($request);
 
         $method = $this->getPaymentMethod($requestData);
