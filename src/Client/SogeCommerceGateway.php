@@ -91,6 +91,15 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
         return $formToken;
     }
 
+    /**
+     * Cancels a payment via the SogeCommerce API.
+     *
+     * Official documentation:
+     * https://sogecommerce.societegenerale.eu/doc/en-EN/rest/V4.0/api/playground/Transaction/Cancel
+     *
+     * This method sends a POST request to the Transaction/Cancel endpoint to cancel an existing transaction,
+     * identified by its UUID. It throws an exception if the cancellation fails or if the API is not activated.
+     */
     public function cancelPayment(PaymentInterface $payment): void
     {
         $method = $payment->getMethod();
@@ -126,7 +135,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'paymentOrderId' => $transactions[0]['uuid'],
+                    'uuid' => $transactions[0]['uuid'],
                 ],
             ],
         );
