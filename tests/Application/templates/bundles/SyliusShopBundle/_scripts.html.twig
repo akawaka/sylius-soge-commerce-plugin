@@ -1,1 +1,40 @@
 {{ encore_entry_script_tags('shop-entry', null, 'shop') }}
+
+{# To be pci dss compliant, soge commerce API states that SRI should be integrated #}
+{# See https://sogecommerce.societegenerale.eu/doc/fr-FR/rest/V4.0/javascript/redirection/sri.html #}
+
+<script type="text/javascript"
+        src="https://static-sogecommerce.societegenerale.eu/static/js/krypton-client/V4.0/stable/kr-payment-form.min.js"
+        integrity="sha384-FIqRg5Z3CArcz1UvV7osFqEHYW01awqNCTwwTYoL6lhBgo7+3t9yswE3vO93wOGv"
+        crossorigin="anonymous"
+        kr-public-key="{{ akawaka_soge_commerce_public_key() }}"
+        kr-post-url-success="{{ path('akawaka_soge_commerce_smart_form_after_submit') }}"
+        kr-language="{{ app.request.locale }}"
+>
+</script>
+
+<script src="https://static-sogecommerce.societegenerale.eu/static/js/krypton-client/V4.0/ext/neon.js">
+</script>
+
+<script>
+    const nextButton = document.querySelector('#next-step, #sylius-pay-link');
+
+    const onSelectInput = (input) => {
+        document.querySelectorAll('[data-smart-form-container]').forEach(form => form.style.display = 'none');
+        if (nextButton) { nextButton.disabled = false; }
+
+        const form = input.closest('.item').querySelector('[data-smart-form-container]');
+        if (!form) {
+            return;
+        }
+
+        form.style.display = 'initial';
+        if (nextButton) { nextButton.disabled = true; }
+    };
+
+    document.querySelectorAll('[name^="sylius_checkout_select_payment[payments]["][name$="[method]"]').forEach((input) => {
+        input.addEventListener('change', () => { onSelectInput(input) });
+    });
+
+    onSelectInput(document.querySelector('[name^="sylius_checkout_select_payment[payments]["][name$="[method]"]:checked'));
+</script>

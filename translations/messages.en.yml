@@ -1,0 +1,7 @@
+akawaka_sylius_soge_commerce_plugin:
+    gateway:
+        user: User
+        password: Password
+        public_key: Public key
+        public_key_help: 'The format of the public key should follow this pattern: user:public_key'
+        hmac_sha_256_key: Hmac sha 256 key

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="Akawaka\SyliusSogeCommercePlugin\Controller\SmartFormAction">
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceGateway" />
+            <call method="setContainer">
+                <argument type="service" id="service_container" />
+            </call>
+            <tag name="controller.service_arguments" />
+        </service>
+
+        <service id="Akawaka\SyliusSogeCommercePlugin\Controller\SmartFormAfterSubmitAction">
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Client\IsValidBankReturnRequest" />
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceGateway" />
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Client\OrderIdTransformer" />
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Handler\UpdateOrderPaymentMethodHandler" />
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Handler\ProgressOrderStatusHandler" />
+            <argument type="service" id="sylius.repository.order" />
+            <argument type="service" id="sylius.repository.payment_method" />
+            <argument type="service" id="doctrine.orm.default_entity_manager" />
+            <call method="setContainer">
+                <argument type="service" id="service_container" />
+            </call>
+            <tag name="controller.service_arguments" />
+        </service>
+
+        <service id="Akawaka\SyliusSogeCommercePlugin\Controller\InstantPaymentNotificationAction">
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Client\IsValidIPNRequest" />
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceGateway" />
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Client\OrderIdTransformer" />
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Handler\UpdateOrderPaymentMethodHandler" />
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Handler\ProgressOrderStatusHandler" />
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Handler\CapturePaymentHandler" />
+            <argument type="service" id="sylius.repository.order" />
+            <argument type="service" id="sylius.repository.payment_method" />
+            <argument type="service" id="doctrine.orm.default_entity_manager" />
+            <call method="setContainer">
+                <argument type="service" id="service_container" />
+            </call>
+            <tag name="controller.service_arguments" />
+        </service>
+    </services>
+</container>

@@ -1,0 +1,4 @@
+akawaka_soge_commerce_instant_payment_notification:
+    path: /order-instant-payment-notification
+    controller: Akawaka\SyliusSogeCommercePlugin\Controller\InstantPaymentNotificationAction
+    methods: POST
