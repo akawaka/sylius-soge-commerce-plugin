@@ -62,7 +62,8 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
                 ],
                 'json' => [
                     'amount' => $order->getTotal(),
-                    'currency' => $order->getCurrencyCode(),
+                    // 'currency' => $order->getCurrencyCode(),
+                    'currency' => 'EUR',
                     'orderId' => $this->orderIdTransformer->transform((string) $order->getId(), (string) $payment->getId()),
                     'customer' => [
                         'email' => $order->getCustomer()?->getEmail(),
@@ -133,6 +134,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
 
         $data = json_decode((string) $response->getBody(), true);
         Assert::isArray($data);
+        dd($data);
 
         // if the api is not activated (error code PSP_100, see https://sogecommerce.societegenerale.eu/doc/fr-FR/rest/V4.0/api/errors_psp.html)
         if (($data['status'] ?? null) === 'ERROR' && ($data['answer']['errorCode'] ?? null) === 'PSP_100') {
