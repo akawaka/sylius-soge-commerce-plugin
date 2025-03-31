@@ -5,6 +5,28 @@
         <defaults public="true" />
         <!-- Put your Behat services here -->
 
-        <service id="akawaka_soge_commerce.context.example" class="Tests\Akawaka\SyliusSogeCommercePlugin\Behat\Context\ExampleContext"/>
+        <service id="akawaka_soge_commerce.behat.context.setup.payment" class="Tests\Akawaka\SyliusSogeCommercePlugin\Behat\Context\Setup\PaymentContext">
+            <argument type="service" id="sylius.behat.shared_storage" />
+            <argument type="service" id="sylius.repository.payment_method" />
+            <argument type="service" id="sylius.fixture.example_factory.payment_method" />
+            <argument type="service" id="sylius.manager.payment_method" />
+            <argument type="collection">
+                <argument key="akawaka_soge_commerce">Soge Commerce</argument>
+            </argument>
+            <argument type="service" id="sylius.behat.notification_checker" />
+        </service>
+
+        <service id="akawaka_soge_commerce.behat.context.ui.shop.soge" class="Tests\Akawaka\SyliusSogeCommercePlugin\Behat\Context\Ui\Shop\SogeContext">
+            <argument type="service" id="sylius.behat.shared_storage" />
+            <argument type="service" id="sylius.repository.order" />
+        </service>
+
+        <service id="Akawaka\SyliusSogeCommercePlugin\Client\IsValidBankReturnRequest" class="Tests\Akawaka\SyliusSogeCommercePlugin\Behat\Service\Mocker\IsValidBankReturnMock" />
+
+        <service id="Tests\Akawaka\SyliusSogeCommercePlugin\Behat\Service\Mocker\SogeCommerceGatewayMock"
+            decorates="Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceGateway"
+        >
+            <argument type="service" id=".inner"/>
+        </service>
     </services>
 </container>
