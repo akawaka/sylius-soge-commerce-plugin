@@ -5,7 +5,27 @@ default:
     suites:
         soge_commerce:
             contexts:
-                - akawaka_soge_commerce.context.example 
+                - akawaka_soge_commerce.behat.context.setup.payment
+
+                - akawaka_soge_commerce.behat.context.ui.shop.soge
+
+                - sylius.behat.context.hook.doctrine_orm
+                - sylius.behat.context.hook.session
+
+                - sylius.behat.context.transform.lexical
+                - sylius.behat.context.transform.order
+                - sylius.behat.context.transform.product
+
+                - sylius.behat.context.setup.channel
+                - sylius.behat.context.setup.product
+                - sylius.behat.context.setup.shipping
+                - sylius.behat.context.setup.shop_security
+                - sylius.behat.context.setup.user
+                - sylius.behat.context.setup.payment
+
+                - sylius.behat.context.ui.shop.cart
+                - sylius.behat.context.ui.shop.checkout
+                - sylius.behat.context.ui.shop.checkout.thank_you
 
             filters:
                 tags: "@soge_commerce&&ui"
