@@ -1,5 +1,5 @@
-/vendor/
-/node_modules/
+.idea
+
 /composer.lock
 
 /etc/build/*
@@ -10,11 +10,13 @@
 /.phpunit.result.cache
 /behat.yml
 /phpspec.yml
-/phpunit.xml
 
 # Symfony CLI https://symfony.com/doc/current/setup/symfony_server.html#different-php-settings-per-project
 /.php-version
 /php.ini
+
+.nginx/*
+!.nginx/.gitkeep
 
 ###> symfony/framework-bundle ###
 /.env.local
@@ -42,5 +44,3 @@ yarn-error.log
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
 
-.nginx/*
-!.nginx/.gitkeep

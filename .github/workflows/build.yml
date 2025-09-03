@@ -23,7 +23,7 @@ jobs:
             matrix:
                 php: ["8.0"]
                 symfony: ["^5.0"]
-                node: ["18.x"]
+                node: ["20.x"]
                 mysql: ["8.4"]
 
         env:
