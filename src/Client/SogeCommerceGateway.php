@@ -65,7 +65,24 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
                     'currency' => $order->getCurrencyCode(),
                     'orderId' => $this->orderIdTransformer->transform((string) $order->getId(), (string) $payment->getId()),
                     'customer' => [
+                        'reference' => $order->getCustomer()?->getId(),
                         'email' => $order->getCustomer()?->getEmail(),
+                    ],
+                    'billingDetails' => [
+                        'firstName' => $this->sanitizeString($order->getBillingAddress()?->getFirstName()),
+                        'lastName' => $this->sanitizeString($order->getBillingAddress()?->getLastName()),
+                        'phoneNumber' => $this->sanitizeString($order->getBillingAddress()?->getPhoneNumber()),
+                        'address' => $this->sanitizeString($order->getBillingAddress()?->getStreet()),
+                        'zipCode' => $this->sanitizeString($order->getBillingAddress()?->getPostcode()),
+                        'city' => $this->sanitizeString($order->getBillingAddress()?->getCity()),
+                    ],
+                    'shippingDetails' => [
+                        'firstName' => $this->sanitizeString($order->getShippingAddress()?->getFirstName()),
+                        'lastName' => $this->sanitizeString($order->getShippingAddress()?->getLastName()),
+                        'phoneNumber' => $this->sanitizeString($order->getShippingAddress()?->getPhoneNumber()),
+                        'address' => $this->sanitizeString($order->getShippingAddress()?->getStreet()),
+                        'zipCode' => $this->sanitizeString($order->getShippingAddress()?->getPostcode()),
+                        'city' => $this->sanitizeString($order->getShippingAddress()?->getCity()),
                     ],
                     'metadata' => [
                         SogeCommerceGatewayInterface::METADATA_METHOD => $method->getCode(),
@@ -159,5 +176,10 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
     public function isPaymentSuccess(array $requestData): bool
     {
         return ($requestData['orderStatus'] ?? null) === 'PAID';
+    }
+
+    private function sanitizeString(?string $value): ?string
+    {
+        return null !== $value ? trim($value) : null;
     }
 }

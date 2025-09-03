@@ -48,6 +48,10 @@ final class SogeCommerceGatewayTest extends TestCase
             customerEmail: 'user@mail.com',
             total: 4357,
             currencyCode: 'EUR',
+            number: 'ABC123',
+            firstname: 'John',
+            lastname: 'Doe',
+            phone: '+33123456789',
         );
 
         $client->expects(self::once())
@@ -65,7 +69,24 @@ final class SogeCommerceGatewayTest extends TestCase
                          'currency' => 'EUR',
                          'orderId' => 'order-132-payment-1',
                          'customer' => [
+                             'reference' => null, // client id
                              'email' => 'user@mail.com',
+                         ],
+                         'billingDetails' => [
+                             'firstName' => 'John',
+                             'lastName' => 'Doe',
+                             'phoneNumber' => '+33123456789',
+                             'address' => '',
+                             'zipCode' => '',
+                             'city' => '',
+                         ],
+                         'shippingDetails' => [
+                             'firstName' => null,
+                             'lastName' => null,
+                             'phoneNumber' => null,
+                             'address' => null,
+                             'zipCode' => null,
+                             'city' => null,
                          ],
                          'metadata' => [
                              'method' => 'my_payment_method',
@@ -83,10 +104,6 @@ final class SogeCommerceGatewayTest extends TestCase
             ));
 
         self::assertEquals('form_token', $gateway->createFormToken($method, $order));
-    }
-
-    public function testCancelPayment(): void
-    {
     }
 
     /**
