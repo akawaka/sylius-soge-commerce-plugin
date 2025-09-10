@@ -17,9 +17,9 @@ use Akawaka\SyliusSogeCommercePlugin\Exception\InvalidOrderIdException;
 
 final class OrderIdTransformer implements OrderIdTransformerInterface
 {
-    public function transform(string $orderNumber, string $paymentId): string
+    public function transform(string $orderId, string $paymentId): string
     {
-        return sprintf('order-%s-payment-%s', $orderNumber, $paymentId);
+        return sprintf('order-%s-payment-%s', $orderId, $paymentId);
     }
 
     public function retrieve(string $value): string

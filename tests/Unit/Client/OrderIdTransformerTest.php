@@ -21,9 +21,9 @@ final class OrderIdTransformerTest extends TestCase
     /**
      * @dataProvider provideTransform
      */
-    public function testTransform(string $orderNumber, string $paymentId, string $expectedResult): void
+    public function testTransform(string $orderId, string $paymentId, string $expectedResult): void
     {
-        self::assertEquals($expectedResult, (new OrderIdTransformer())->transform($orderNumber, $paymentId));
+        self::assertEquals($expectedResult, (new OrderIdTransformer())->transform($orderId, $paymentId));
     }
 
     public function provideTransform(): iterable
