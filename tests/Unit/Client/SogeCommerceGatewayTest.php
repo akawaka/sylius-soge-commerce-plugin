@@ -71,22 +71,22 @@ final class SogeCommerceGatewayTest extends TestCase
                          'customer' => [
                              'reference' => null, // client id
                              'email' => 'user@mail.com',
-                         ],
-                         'billingDetails' => [
-                             'firstName' => 'John',
-                             'lastName' => 'Doe',
-                             'phoneNumber' => '+33123456789',
-                             'address' => '',
-                             'zipCode' => '',
-                             'city' => '',
-                         ],
-                         'shippingDetails' => [
-                             'firstName' => null,
-                             'lastName' => null,
-                             'phoneNumber' => null,
-                             'address' => null,
-                             'zipCode' => null,
-                             'city' => null,
+                             'billingDetails' => [
+                                 'firstName' => 'John',
+                                 'lastName' => 'Doe',
+                                 'phoneNumber' => '+33123456789',
+                                 'address' => '',
+                                 'zipCode' => '',
+                                 'city' => '',
+                             ],
+                             'shippingDetails' => [
+                                 'firstName' => null,
+                                 'lastName' => null,
+                                 'phoneNumber' => null,
+                                 'address' => null,
+                                 'zipCode' => null,
+                                 'city' => null,
+                             ],
                          ],
                          'metadata' => [
                              'method' => 'my_payment_method',
