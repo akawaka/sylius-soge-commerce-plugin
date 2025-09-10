@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Tests\Akawaka\SyliusSogeCommercePlugin\Unit\Client;
 
+use Sylius\Component\Core\Model\Address;
 use Sylius\Component\Core\Model\Customer;
 use Sylius\Component\Core\Model\Order;
-use Sylius\Component\Core\Model\Address;
 
 final class FakeOrder extends Order
 {

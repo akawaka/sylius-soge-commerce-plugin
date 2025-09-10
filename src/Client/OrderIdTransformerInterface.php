@@ -15,7 +15,7 @@ namespace Akawaka\SyliusSogeCommercePlugin\Client;
 
 interface OrderIdTransformerInterface
 {
-    public function transform(string $orderId, string $paymentId): string;
+    public function transform(string $orderNumber, string $paymentId): string;
 
     public function retrieve(string $value): string;
 
