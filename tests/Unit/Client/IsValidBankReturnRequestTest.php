@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Tests\Akawaka\SyliusSogeCommercePlugin\Unit\Client;
 
 use Akawaka\SyliusSogeCommercePlugin\Client\IsValidBankReturnRequest;
+use Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceRequestPayloadExtractor;
 use PHPUnit\Framework\TestCase;
 use Sylius\Bundle\PayumBundle\Model\GatewayConfig;
 use Sylius\Component\Core\Model\PaymentMethod;
@@ -32,7 +33,7 @@ final class IsValidBankReturnRequestTest extends TestCase
         ?bool $expectedResult,
         ?string $expectedExceptionFQCN,
     ): void {
-        $isValidBankReturnRequest = new IsValidBankReturnRequest();
+        $isValidBankReturnRequest = new IsValidBankReturnRequest(new SogeCommerceRequestPayloadExtractor());
 
         $method = new PaymentMethod();
 
@@ -90,8 +91,17 @@ final class IsValidBankReturnRequestTest extends TestCase
                 'kr-answer' => 'some_answer',
                 'kr-hash' => '8434fd6a93d9d12f709ca5a47cea66f2b34bab2fb77c04fcf19f066b0ef139fa',
             ],
+            false,
             null,
-            \RuntimeException::class,
+        ];
+
+        yield 'empty payload returns false instead of throwing' => [
+            [
+                'hmac_sha_256_key' => 'test',
+            ],
+            [],
+            false,
+            null,
         ];
     }
 }
