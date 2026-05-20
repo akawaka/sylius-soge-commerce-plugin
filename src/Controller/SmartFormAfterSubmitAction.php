@@ -16,9 +16,12 @@ namespace Akawaka\SyliusSogeCommercePlugin\Controller;
 use Akawaka\SyliusSogeCommercePlugin\Client\IsValidRequestInterface;
 use Akawaka\SyliusSogeCommercePlugin\Client\OrderIdTransformerInterface;
 use Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceGatewayInterface;
+use Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceRequestPayloadExtractorInterface;
 use Akawaka\SyliusSogeCommercePlugin\Handler\ProgressOrderStatusHandlerInterface;
 use Akawaka\SyliusSogeCommercePlugin\Handler\UpdateOrderPaymentMethodHandlerInterface;
 use Doctrine\Persistence\ObjectManager;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use SM\SMException;
 use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentMethodInterface;
@@ -32,6 +35,10 @@ use Webmozart\Assert\Assert;
 
 final class SmartFormAfterSubmitAction extends AbstractController
 {
+    private const LOGGED_BODY_MAX_LENGTH = 2000;
+
+    private LoggerInterface $logger;
+
     public function __construct(
         private IsValidRequestInterface $isValidRequest,
         private SogeCommerceGatewayInterface $gateway,
@@ -41,7 +48,10 @@ final class SmartFormAfterSubmitAction extends AbstractController
         private OrderRepositoryInterface $orderRepository,
         private PaymentMethodRepositoryInterface $paymentMethodRepository,
         private ObjectManager $em,
+        private SogeCommerceRequestPayloadExtractorInterface $payloadExtractor,
+        ?LoggerInterface $logger = null,
     ) {
+        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -93,12 +103,27 @@ final class SmartFormAfterSubmitAction extends AbstractController
         return $this->redirectToRoute('sylius_shop_order_pay', ['tokenValue' => $order->getTokenValue()]);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function getRequestData(Request $request): array
     {
-        $requestData = json_decode((string) $request->request->get('kr-answer'), true);
-        Assert::isArray($requestData);
+        try {
+            return $this->payloadExtractor->extract($request)->decodedAnswer();
+        } catch (\Throwable $exception) {
+            $body = (string) $request->getContent();
+            $truncated = strlen($body) > self::LOGGED_BODY_MAX_LENGTH;
 
-        return $requestData;
+            $this->logger->error('Soge Commerce SmartForm payload could not be processed.', [
+                'reason' => $exception->getMessage(),
+                'content_type' => $request->headers->get('Content-Type'),
+                'body_length' => strlen($body),
+                'body_excerpt' => $truncated ? substr($body, 0, self::LOGGED_BODY_MAX_LENGTH) . '…' : $body,
+                'parameter_bag_keys' => array_keys($request->request->all()),
+            ]);
+
+            return [];
+        }
     }
 
     private function getPaymentMethod(array $requestData): PaymentMethodInterface

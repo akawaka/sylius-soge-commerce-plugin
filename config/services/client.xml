@@ -9,8 +9,16 @@
 
         <service id="Akawaka\SyliusSogeCommercePlugin\Client\OrderIdTransformer" />
 
-        <service id="Akawaka\SyliusSogeCommercePlugin\Client\IsValidBankReturnRequest" />
+        <service id="Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceRequestPayloadExtractor" />
+        <service id="Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceRequestPayloadExtractorInterface"
+                 alias="Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceRequestPayloadExtractor" />
 
-        <service id="Akawaka\SyliusSogeCommercePlugin\Client\IsValidIPNRequest" />
+        <service id="Akawaka\SyliusSogeCommercePlugin\Client\IsValidBankReturnRequest">
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceRequestPayloadExtractor" />
+        </service>
+
+        <service id="Akawaka\SyliusSogeCommercePlugin\Client\IsValidIPNRequest">
+            <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceRequestPayloadExtractor" />
+        </service>
     </services>
 </container>
