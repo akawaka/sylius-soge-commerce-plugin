@@ -1,2 +1,3 @@
 akawaka_sylius_soge_commerce_plugin:
     payment_refused: Paiement refusé
+    amount_mismatch: Votre panier a été modifié pendant le paiement. Le montant réglé ne correspond plus au total de votre commande, le paiement a donc été annulé. Merci de vérifier votre panier et de recommencer.

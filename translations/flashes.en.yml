@@ -1,2 +1,3 @@
 akawaka_sylius_soge_commerce_plugin:
     payment_refused: Payment refused
+    amount_mismatch: Your cart was changed during payment. The amount paid no longer matches your order total, so the payment was canceled. Please review your cart and try again.
