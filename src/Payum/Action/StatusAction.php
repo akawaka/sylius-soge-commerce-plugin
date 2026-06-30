@@ -58,7 +58,10 @@ final class StatusAction implements ActionInterface
                 $this->eventDispatcher->dispatch(new PaymentCancelationFailedEvent($e, $payment));
 
                 // Let's make sure the payment amount is true to what the user actually paid
-                $payment->setAmount($this->getRealPaidAmount($payment));
+                $realPaidAmount = $this->getRealPaidAmount($payment);
+                if (null !== $realPaidAmount) {
+                    $payment->setAmount($realPaidAmount);
+                }
                 $payment->setDetails(array_merge([
                     SogeCommerceGatewayInterface::PAYMENT_DETAILS_STATUS_KEY => 'CANCEL_FAILED',
                 ], $payment->getDetails()));
@@ -86,11 +89,16 @@ final class StatusAction implements ActionInterface
         return $this->getRealPaidAmount($payment) === $orderAmount;
     }
 
-    private function getRealPaidAmount(PaymentInterface $payment): int
+    /**
+     * Returns the amount actually paid at SogeCommerce, or null when it cannot be read from the
+     * payment details (e.g. the payment was regenerated after the cart changed mid-payment, so it
+     * no longer carries the SogeCommerce payload). Callers must treat null as an invalid amount
+     * rather than crashing.
+     */
+    private function getRealPaidAmount(PaymentInterface $payment): ?int
     {
         $amount = $payment->getDetails()[SogeCommerceGatewayInterface::PAYMENT_DETAILS_REQUEST_DATA_KEY]['orderDetails']['orderTotalAmount'] ?? null;
-        Assert::integer($amount);
 
-        return $amount;
+        return is_int($amount) ? $amount : null;
     }
 }
