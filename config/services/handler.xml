@@ -8,7 +8,7 @@
         </service>
 
         <service id="Akawaka\SyliusSogeCommercePlugin\Handler\ProgressOrderStatusHandler">
-            <argument type="service" id="sm.factory" />
+            <argument type="service" id="Sylius\Abstraction\StateMachine\StateMachineInterface" />
         </service>
 
         <service id="Akawaka\SyliusSogeCommercePlugin\Handler\UpdateOrderPaymentMethodHandler" />

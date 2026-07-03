@@ -18,7 +18,10 @@ use Akawaka\SyliusSogeCommercePlugin\Exception\InvalidPaymentMethodException;
 use Akawaka\SyliusSogeCommercePlugin\Exception\SogeCommerceApiException;
 use Akawaka\SyliusSogeCommercePlugin\Exception\SogeCommerceApiNotActivatedException;
 use Akawaka\SyliusSogeCommercePlugin\Payum\PaymentGatewayFactory;
-use GuzzleHttp\ClientInterface;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentMethodInterface;
 use Sylius\Component\Payment\Model\PaymentInterface;
@@ -29,6 +32,8 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
     public function __construct(
         private ClientInterface $client,
         private OrderIdTransformerInterface $orderIdTransformer,
+        private RequestFactoryInterface $requestFactory,
+        private StreamFactoryInterface $streamFactory,
     ) {
     }
 
@@ -52,44 +57,41 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
         $payment = $order->getPayments()->last();
         Assert::isInstanceOf($payment, PaymentInterface::class);
 
-        $response = $this->client->request(
+        $request = $this->createJsonRequest(
             'POST',
             'https://api-sogecommerce.societegenerale.eu/api-payment/V4/Charge/CreatePayment',
+            $authorization,
             [
-                'headers' => [
-                    'Authorization' => sprintf('Basic %s', $authorization),
-                    'Content-Type' => 'application/json',
+                'amount' => $order->getTotal(),
+                'currency' => $order->getCurrencyCode(),
+                'orderId' => $this->orderIdTransformer->transform((string) $order->getId(), (string) $payment->getId()),
+                'customer' => [
+                    'reference' => $order->getCustomer()?->getId(),
+                    'email' => $order->getCustomer()?->getEmail(),
+                    'billingDetails' => [
+                        'firstName' => $this->sanitizeString($order->getBillingAddress()?->getFirstName()),
+                        'lastName' => $this->sanitizeString($order->getBillingAddress()?->getLastName()),
+                        'phoneNumber' => $this->sanitizeString($order->getBillingAddress()?->getPhoneNumber()),
+                        'address' => $this->sanitizeString($order->getBillingAddress()?->getStreet()),
+                        'zipCode' => $this->sanitizeString($order->getBillingAddress()?->getPostcode()),
+                        'city' => $this->sanitizeString($order->getBillingAddress()?->getCity()),
+                    ],
+                    'shippingDetails' => [
+                        'firstName' => $this->sanitizeString($order->getShippingAddress()?->getFirstName()),
+                        'lastName' => $this->sanitizeString($order->getShippingAddress()?->getLastName()),
+                        'phoneNumber' => $this->sanitizeString($order->getShippingAddress()?->getPhoneNumber()),
+                        'address' => $this->sanitizeString($order->getShippingAddress()?->getStreet()),
+                        'zipCode' => $this->sanitizeString($order->getShippingAddress()?->getPostcode()),
+                        'city' => $this->sanitizeString($order->getShippingAddress()?->getCity()),
+                    ],
                 ],
-                'json' => [
-                    'amount' => $order->getTotal(),
-                    'currency' => $order->getCurrencyCode(),
-                    'orderId' => $this->orderIdTransformer->transform((string) $order->getId(), (string) $payment->getId()),
-                    'customer' => [
-                        'reference' => $order->getCustomer()?->getId(),
-                        'email' => $order->getCustomer()?->getEmail(),
-                        'billingDetails' => [
-                            'firstName' => $this->sanitizeString($order->getBillingAddress()?->getFirstName()),
-                            'lastName' => $this->sanitizeString($order->getBillingAddress()?->getLastName()),
-                            'phoneNumber' => $this->sanitizeString($order->getBillingAddress()?->getPhoneNumber()),
-                            'address' => $this->sanitizeString($order->getBillingAddress()?->getStreet()),
-                            'zipCode' => $this->sanitizeString($order->getBillingAddress()?->getPostcode()),
-                            'city' => $this->sanitizeString($order->getBillingAddress()?->getCity()),
-                        ],
-                        'shippingDetails' => [
-                            'firstName' => $this->sanitizeString($order->getShippingAddress()?->getFirstName()),
-                            'lastName' => $this->sanitizeString($order->getShippingAddress()?->getLastName()),
-                            'phoneNumber' => $this->sanitizeString($order->getShippingAddress()?->getPhoneNumber()),
-                            'address' => $this->sanitizeString($order->getShippingAddress()?->getStreet()),
-                            'zipCode' => $this->sanitizeString($order->getShippingAddress()?->getPostcode()),
-                            'city' => $this->sanitizeString($order->getShippingAddress()?->getCity()),
-                        ],
-                    ],
-                    'metadata' => [
-                        SogeCommerceGatewayInterface::METADATA_METHOD => $method->getCode(),
-                    ],
+                'metadata' => [
+                    SogeCommerceGatewayInterface::METADATA_METHOD => $method->getCode(),
                 ],
             ],
         );
+
+        $response = $this->client->sendRequest($request);
 
         $data = json_decode((string) $response->getBody(), true);
         Assert::isArray($data);
@@ -143,19 +145,16 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
         Assert::isArray($transactions);
         Assert::isArray($transactions[0]);
 
-        $response = $this->client->request(
+        $request = $this->createJsonRequest(
             'POST',
             'https://api-sogecommerce.societegenerale.eu/api-payment/V4/Transaction/Cancel',
+            $authorization,
             [
-                'headers' => [
-                    'Authorization' => sprintf('Basic %s', $authorization),
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'uuid' => $transactions[0]['uuid'],
-                ],
+                'uuid' => $transactions[0]['uuid'],
             ],
         );
+
+        $response = $this->client->sendRequest($request);
 
         $data = json_decode((string) $response->getBody(), true);
         Assert::isArray($data);
@@ -176,6 +175,17 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
     public function isPaymentSuccess(array $requestData): bool
     {
         return ($requestData['orderStatus'] ?? null) === 'PAID';
+    }
+
+    private function createJsonRequest(string $method, string $uri, string $authorization, array $body): RequestInterface
+    {
+        $request = $this->requestFactory->createRequest($method, $uri)
+            ->withHeader('Authorization', sprintf('Basic %s', $authorization))
+            ->withHeader('Content-Type', 'application/json');
+
+        return $request->withBody(
+            $this->streamFactory->createStream(json_encode($body, \JSON_THROW_ON_ERROR)),
+        );
     }
 
     private function sanitizeString(?string $value): ?string

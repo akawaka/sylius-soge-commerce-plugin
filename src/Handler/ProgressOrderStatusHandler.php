@@ -14,29 +14,28 @@ declare(strict_types=1);
 namespace Akawaka\SyliusSogeCommercePlugin\Handler;
 
 use Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceGatewayInterface;
-use SM\Factory\FactoryInterface;
+use Sylius\Abstraction\StateMachine\StateMachineInterface;
 use Sylius\Component\Core\Model\OrderInterface;
-use Sylius\Component\Core\OrderCheckoutStates;
 use Sylius\Component\Core\OrderCheckoutTransitions;
 use Webmozart\Assert\Assert;
 
 final class ProgressOrderStatusHandler implements ProgressOrderStatusHandlerInterface
 {
+    private const GRAPH = 'sylius_order_checkout';
+
     public function __construct(
-        private FactoryInterface $stateMachineFactory,
+        private StateMachineInterface $stateMachine,
     ) {
     }
 
     public function __invoke(OrderInterface $order, array $requestData): void
     {
-        $stateMachine = $this->stateMachineFactory->get($order, 'sylius_order_checkout');
-
-        if (OrderCheckoutStates::STATE_COMPLETED !== $stateMachine->getState()) {
-            $stateMachine->apply(OrderCheckoutTransitions::TRANSITION_SELECT_PAYMENT);
+        if ($this->stateMachine->can($order, self::GRAPH, OrderCheckoutTransitions::TRANSITION_SELECT_PAYMENT)) {
+            $this->stateMachine->apply($order, self::GRAPH, OrderCheckoutTransitions::TRANSITION_SELECT_PAYMENT);
         }
 
-        if (OrderCheckoutStates::STATE_COMPLETED !== $stateMachine->getState()) {
-            $stateMachine->apply(OrderCheckoutTransitions::TRANSITION_COMPLETE);
+        if ($this->stateMachine->can($order, self::GRAPH, OrderCheckoutTransitions::TRANSITION_COMPLETE)) {
+            $this->stateMachine->apply($order, self::GRAPH, OrderCheckoutTransitions::TRANSITION_COMPLETE);
         }
 
         $payment = $order->getLastPayment();

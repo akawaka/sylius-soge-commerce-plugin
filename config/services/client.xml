@@ -5,6 +5,8 @@
         <service id="Akawaka\SyliusSogeCommercePlugin\Client\SogeCommerceGateway">
             <argument type="service" id="sylius.http_client" />
             <argument type="service" id="Akawaka\SyliusSogeCommercePlugin\Client\OrderIdTransformer" />
+            <argument type="service" id="Psr\Http\Message\RequestFactoryInterface" />
+            <argument type="service" id="Psr\Http\Message\StreamFactoryInterface" />
         </service>
 
         <service id="Akawaka\SyliusSogeCommercePlugin\Client\OrderIdTransformer" />

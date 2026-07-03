@@ -15,8 +15,7 @@ namespace Tests\Akawaka\SyliusSogeCommercePlugin\Unit\Handler;
 
 use Akawaka\SyliusSogeCommercePlugin\Handler\ProgressOrderStatusHandler;
 use PHPUnit\Framework\TestCase;
-use SM\Factory\FactoryInterface;
-use SM\StateMachine\StateMachineInterface;
+use Sylius\Abstraction\StateMachine\StateMachineInterface;
 use Sylius\Component\Core\Model\Order;
 use Sylius\Component\Core\Model\Payment;
 
@@ -27,28 +26,25 @@ final class ProgressOrderStatusHandlerTest extends TestCase
         $order = new Order();
         $order->addPayment($payment = new Payment());
 
-        $stateMachineFactory = self::createMock(FactoryInterface::class);
-        $stateMachineFactory->expects(self::once())
-            ->method('get')
-            ->with($order, 'sylius_order_checkout')
-            ->willReturn($stateMachine = self::createMock(StateMachineInterface::class))
-        ;
+        $stateMachine = self::createMock(StateMachineInterface::class);
 
         $stateMachine->expects(self::exactly(2))
-            ->method('getState')
-            ->willReturn('shipping_selected')
-            ->willReturnOnConsecutiveCalls('shipping_selected', 'payment_selected');
+            ->method('can')
+            ->willReturnCallback(fn (object $subject, string $graph, string $transition) => match ($transition) {
+                'select_payment' => true,
+                'complete' => true,
+                default => throw new \LogicException(),
+            });
 
         $stateMachine->expects(self::exactly(2))
             ->method('apply')
-            ->willReturnCallback(fn (string $transition) => match (true) {
-                'select_payment' == $transition => true,
-                'complete' == $transition => true,
+            ->willReturnCallback(fn (object $subject, string $graph, string $transition) => match (true) {
+                'select_payment' === $transition => null,
+                'complete' === $transition => null,
                 default => throw new \LogicException(),
-            })
-        ;
+            });
 
-        (new ProgressOrderStatusHandler($stateMachineFactory))->__invoke($order, ['foo' => 'some data']);
+        (new ProgressOrderStatusHandler($stateMachine))->__invoke($order, ['foo' => 'some data']);
 
         self::assertEquals(['sogeCommerceRequestData' => ['foo' => 'some data']], $payment->getDetails());
     }
@@ -58,27 +54,21 @@ final class ProgressOrderStatusHandlerTest extends TestCase
         $order = new Order();
         $order->addPayment($payment = new Payment());
 
-        $stateMachineFactory = self::createMock(FactoryInterface::class);
-        $stateMachineFactory->expects(self::once())
-            ->method('get')
-            ->with($order, 'sylius_order_checkout')
-            ->willReturn($stateMachine = self::createMock(StateMachineInterface::class))
-        ;
+        $stateMachine = self::createMock(StateMachineInterface::class);
 
         $stateMachine->expects(self::exactly(2))
-            ->method('getState')
-            ->willReturn('shipping_selected')
-            ->willReturnOnConsecutiveCalls('shipping_selected', 'completed');
+            ->method('can')
+            ->willReturnCallback(fn (object $subject, string $graph, string $transition) => match ($transition) {
+                'select_payment' => true,
+                'complete' => false,
+                default => throw new \LogicException(),
+            });
 
         $stateMachine->expects(self::exactly(1))
             ->method('apply')
-            ->willReturnCallback(fn (string $transition) => match (true) {
-                'select_payment' == $transition => true,
-                default => throw new \LogicException(),
-            })
-        ;
+            ->with($order, 'sylius_order_checkout', 'select_payment');
 
-        (new ProgressOrderStatusHandler($stateMachineFactory))->__invoke($order, ['foo' => 'some data']);
+        (new ProgressOrderStatusHandler($stateMachine))->__invoke($order, ['foo' => 'some data']);
 
         self::assertEquals(['sogeCommerceRequestData' => ['foo' => 'some data']], $payment->getDetails());
     }
@@ -88,23 +78,16 @@ final class ProgressOrderStatusHandlerTest extends TestCase
         $order = new Order();
         $order->addPayment($payment = new Payment());
 
-        $stateMachineFactory = self::createMock(FactoryInterface::class);
-        $stateMachineFactory->expects(self::once())
-            ->method('get')
-            ->with($order, 'sylius_order_checkout')
-            ->willReturn($stateMachine = self::createMock(StateMachineInterface::class))
-        ;
+        $stateMachine = self::createMock(StateMachineInterface::class);
 
         $stateMachine->expects(self::exactly(2))
-            ->method('getState')
-            ->willReturn('completed')
-        ;
+            ->method('can')
+            ->willReturn(false);
 
-        $stateMachine->expects(self::exactly(0))
-            ->method('apply')
-        ;
+        $stateMachine->expects(self::never())
+            ->method('apply');
 
-        (new ProgressOrderStatusHandler($stateMachineFactory))->__invoke($order, ['foo' => 'some data']);
+        (new ProgressOrderStatusHandler($stateMachine))->__invoke($order, ['foo' => 'some data']);
 
         self::assertEquals(['sogeCommerceRequestData' => ['foo' => 'some data']], $payment->getDetails());
     }
