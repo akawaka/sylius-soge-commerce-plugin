@@ -19,7 +19,7 @@
     "@rollup/plugin-inject": "^4.0.4",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@semantic-ui-react/css-patch": "^1.1.2",
-    "@symfony/webpack-encore": "^3.1.0",
+    "@symfony/webpack-encore": "^5.1.0",
     "babel-plugin-fast-async": "^6.1.2",
     "babel-plugin-module-resolver": "^4.1.0",
     "dedent": "^0.7.0",
