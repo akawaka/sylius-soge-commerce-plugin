@@ -48,24 +48,33 @@ final class StatusAction implements ActionInterface
 
         if ($this->isAmountValid($payment)) {
             $request->markCaptured();
-        } else {
-            $request->markFailed();
 
-            try {
-                $this->gateway->cancelPayment($payment);
-            } catch (SogeCommerceApiException $e) {
-                // This event should be listened to send an email or re-try to cancel the payment
-                $this->eventDispatcher->dispatch(new PaymentCancelationFailedEvent($e, $payment));
+            return;
+        }
 
-                // Let's make sure the payment amount is true to what the user actually paid
-                $realPaidAmount = $this->getRealPaidAmount($payment);
-                if (null !== $realPaidAmount) {
-                    $payment->setAmount($realPaidAmount);
-                }
-                $payment->setDetails(array_merge([
-                    SogeCommerceGatewayInterface::PAYMENT_DETAILS_STATUS_KEY => 'CANCEL_FAILED',
-                ], $payment->getDetails()));
+        $request->markFailed();
+
+        // A payment that never went through Soge Commerce (e.g. the payment selection form was
+        // submitted although the smart form could not be displayed) carries no transaction to
+        // cancel: asking the API to cancel it would only crash the return page.
+        if (!$this->hasSogeCommercePayload($payment)) {
+            return;
+        }
+
+        try {
+            $this->gateway->cancelPayment($payment);
+        } catch (SogeCommerceApiException $e) {
+            // This event should be listened to send an email or re-try to cancel the payment
+            $this->eventDispatcher->dispatch(new PaymentCancelationFailedEvent($e, $payment));
+
+            // Let's make sure the payment amount is true to what the user actually paid
+            $realPaidAmount = $this->getRealPaidAmount($payment);
+            if (null !== $realPaidAmount) {
+                $payment->setAmount($realPaidAmount);
             }
+            $payment->setDetails(array_merge([
+                SogeCommerceGatewayInterface::PAYMENT_DETAILS_STATUS_KEY => 'CANCEL_FAILED',
+            ], $payment->getDetails()));
         }
     }
 
@@ -77,6 +86,11 @@ final class StatusAction implements ActionInterface
             $request instanceof GetStatusInterface &&
             $request->getFirstModel() instanceof PaymentInterface
         ;
+    }
+
+    private function hasSogeCommercePayload(PaymentInterface $payment): bool
+    {
+        return is_array($payment->getDetails()[SogeCommerceGatewayInterface::PAYMENT_DETAILS_REQUEST_DATA_KEY] ?? null);
     }
 
     private function isAmountValid(PaymentInterface $payment): bool
