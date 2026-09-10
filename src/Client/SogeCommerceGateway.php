@@ -26,6 +26,12 @@ use Webmozart\Assert\Assert;
 
 final class SogeCommerceGateway implements SogeCommerceGatewayInterface
 {
+    /** Size of the customer phone number fields on the Soge Commerce API. */
+    private const PHONE_NUMBER_MAX_LENGTH = 32;
+
+    /** Below this many digits the value is not a phone number, it is sent as null instead. */
+    private const PHONE_NUMBER_MIN_DIGITS = 6;
+
     public function __construct(
         private ClientInterface $client,
         private OrderIdTransformerInterface $orderIdTransformer,
@@ -70,7 +76,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
                         'billingDetails' => [
                             'firstName' => $this->sanitizeString($order->getBillingAddress()?->getFirstName()),
                             'lastName' => $this->sanitizeString($order->getBillingAddress()?->getLastName()),
-                            'phoneNumber' => $this->sanitizeString($order->getBillingAddress()?->getPhoneNumber()),
+                            'phoneNumber' => $this->sanitizePhoneNumber($order->getBillingAddress()?->getPhoneNumber()),
                             'address' => $this->sanitizeString($order->getBillingAddress()?->getStreet()),
                             'zipCode' => $this->sanitizeString($order->getBillingAddress()?->getPostcode()),
                             'city' => $this->sanitizeString($order->getBillingAddress()?->getCity()),
@@ -78,7 +84,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
                         'shippingDetails' => [
                             'firstName' => $this->sanitizeString($order->getShippingAddress()?->getFirstName()),
                             'lastName' => $this->sanitizeString($order->getShippingAddress()?->getLastName()),
-                            'phoneNumber' => $this->sanitizeString($order->getShippingAddress()?->getPhoneNumber()),
+                            'phoneNumber' => $this->sanitizePhoneNumber($order->getShippingAddress()?->getPhoneNumber()),
                             'address' => $this->sanitizeString($order->getShippingAddress()?->getStreet()),
                             'zipCode' => $this->sanitizeString($order->getShippingAddress()?->getPostcode()),
                             'city' => $this->sanitizeString($order->getShippingAddress()?->getCity()),
@@ -137,11 +143,12 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
 
         $authorization = base64_encode(sprintf('%s:%s', $user, $password));
 
-        $details = $payment->getDetails();
-        Assert::isArray($details[SogeCommerceGatewayInterface::PAYMENT_DETAILS_REQUEST_DATA_KEY]);
-        $transactions = $details[SogeCommerceGatewayInterface::PAYMENT_DETAILS_REQUEST_DATA_KEY]['transactions'];
-        Assert::isArray($transactions);
-        Assert::isArray($transactions[0]);
+        // A payment that never went through Soge Commerce has no transaction to cancel: fail with
+        // the API exception callers already handle instead of a PHP warning on the missing payload.
+        $uuid = $payment->getDetails()[SogeCommerceGatewayInterface::PAYMENT_DETAILS_REQUEST_DATA_KEY]['transactions'][0]['uuid'] ?? null;
+        if (!is_string($uuid) || '' === $uuid) {
+            throw new FailedToCancelPaymentException('The payment carries no Soge Commerce transaction to cancel.');
+        }
 
         $response = $this->client->request(
             'POST',
@@ -152,7 +159,7 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'uuid' => $transactions[0]['uuid'],
+                    'uuid' => $uuid,
                 ],
             ],
         );
@@ -181,5 +188,27 @@ final class SogeCommerceGateway implements SogeCommerceGatewayInterface
     private function sanitizeString(?string $value): ?string
     {
         return null !== $value ? trim($value) : null;
+    }
+
+    /**
+     * Soge Commerce refuses the whole form token request ("invalid customer shipping phone number")
+     * as soon as a phone number carries anything but digits, e.g. "06 12 34 56 78 / mail@example.com"
+     * typed by a store clerk in the address book. Only the first phone-looking sequence is kept, with
+     * its separators removed; a value without a usable number is sent as null, which the API accepts.
+     */
+    private function sanitizePhoneNumber(?string $value): ?string
+    {
+        if (null === $value || 1 !== preg_match('/\+?\d[\d\s.\-()]*/', $value, $matches)) {
+            return null;
+        }
+
+        $digits = preg_replace('/\D/', '', $matches[0]) ?? '';
+        if (strlen($digits) < self::PHONE_NUMBER_MIN_DIGITS) {
+            return null;
+        }
+
+        $phoneNumber = (str_starts_with($matches[0], '+') ? '+' : '') . $digits;
+
+        return strlen($phoneNumber) <= self::PHONE_NUMBER_MAX_LENGTH ? $phoneNumber : null;
     }
 }

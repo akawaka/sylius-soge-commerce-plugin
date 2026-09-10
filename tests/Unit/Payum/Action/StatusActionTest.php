@@ -56,18 +56,20 @@ final class StatusActionTest extends TestCase
         self::assertTrue($request->isFailed());
     }
 
-    public function testItFailsCleanlyWithoutCrashingWhenThePaidAmountCannotBeRead(): void
+    public function testItFailsWithoutCancelingWhenThePaymentNeverReachedSogeCommerce(): void
     {
-        // Regression: when the cart is changed mid-payment Sylius regenerates the payment, so the
-        // new payment no longer carries the SogeCommerce payload. Reading the paid amount used to
-        // throw "Expected an integer. Got: NULL" and return a 500; it must now fail cleanly.
+        // Regression: a payment without the SogeCommerce payload (payment regenerated after the
+        // cart changed mid-payment, or payment selection form submitted without the smart form)
+        // has no transaction to cancel. Canceling used to crash on the missing payload and turn
+        // /order/after-pay into a 500; the payment must simply be marked as failed.
         $action = new StatusAction(
             $gateway = self::createMock(SogeCommerceGatewayInterface::class),
-            self::createMock(EventDispatcherInterface::class),
+            $eventDispatcher = self::createMock(EventDispatcherInterface::class),
         );
 
-        $payment = $this->createPaymentWithDetails(2000, []);
-        $gateway->expects(self::once())->method('cancelPayment')->with($payment);
+        $payment = $this->createPaymentWithDetails(2000, ['cartToken' => null]);
+        $gateway->expects(self::never())->method('cancelPayment');
+        $eventDispatcher->expects(self::never())->method('dispatch');
 
         $request = new GetHumanStatus($payment);
         $action->execute($request);
@@ -86,7 +88,9 @@ final class StatusActionTest extends TestCase
         $order->method('getTotal')->willReturn(2000);
         $payment = self::createMock(PaymentInterface::class);
         $payment->method('getOrder')->willReturn($order);
-        $payment->method('getDetails')->willReturn([]);
+        $payment->method('getDetails')->willReturn([
+            SogeCommerceGatewayInterface::PAYMENT_DETAILS_REQUEST_DATA_KEY => ['transactions' => [['uuid' => 'transaction-uuid']]],
+        ]);
 
         $gateway->method('cancelPayment')->willThrowException(new FailedToCancelPaymentException());
         $payment->expects(self::never())->method('setAmount');
